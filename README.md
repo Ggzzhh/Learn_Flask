@@ -10,7 +10,7 @@ Jinja2模版在html中的各种应用
 * 控制结构
 
     * 如 if-else 结构
-        ```
+        ```html
         {% if user %}
             Hello, {{ user }}!
         {% else %}
@@ -19,7 +19,7 @@ Jinja2模版在html中的各种应用
         ```
 
     * 如 for 循环结构
-        ```
+        ```html
         <ul>
             {% for comment in comments %}
                 <li>{{ comment }}</li>
@@ -28,7 +28,7 @@ Jinja2模版在html中的各种应用
         ```
 
     * Jinja2 支持宏  宏是类似函数的存在 如：
-        ```
+        ```html
         {%　macro render_comment(comment)　%} # macro就是宏
             <li>{{ comment }}</li>
         {% endmacro %}
@@ -39,7 +39,7 @@ Jinja2模版在html中的各种应用
         ```
 
     * 导入其他文件中存在的宏
-        ```
+        ```html
         {% import 'macros.html' as macros %}
         <ul>
             {% for comment in comments %}
@@ -56,7 +56,7 @@ Jinja2模版在html中的各种应用
     * flask拓展模块——flask-bootstrap
         * 基本用法参照例子templates/base.html
         * 如果要在已经有内容的块中添加新内容需要使用super()，如：
-            ```
+            ```html
             {% block scripts %}
             {{ super() }}
             <script type="text/javascript" src="my-script.js"></script>
@@ -65,7 +65,7 @@ Jinja2模版在html中的各种应用
 
     * 自定义错误页面
         * py文件中写入以下内容（例）
-            ```
+            ```python
             @app.errorhandler(404)
             def page_not_found(e):
                 return render_template('404.html'), 404
@@ -78,14 +78,14 @@ Jinja2模版在html中的各种应用
         * 其余内容404.html在templates中
 
     * 连接 返回地址时 可使用函数url_for() 会返回相对地址 _external关键字参数默认为false
-        ```
+        ```html
         url_for('user', name='john', _external=True)
         #http://localhost:5000/user/john
         url_for('index', page=2) # /?page=2
         ```
 
     * 静态文件 比如css文件或者图片 例子是标签地址
-        ```
+        ```html
         {% block head %}
         {{ super() }}
         <link rel="shortcut icon" href="{{ url_for('static',
