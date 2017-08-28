@@ -1,11 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="utf-8">
-	<title>测试变量</title>
-</head>
-<body>
-	<!--过滤器|   如lower就是把值都转为小写-->
-	<h1>你好啊！{{ name|capitalize }}!</h1>
-</body>
-</html>
+{% extends "base.html" %}}
+
+{% block title %}Flasky{% endblock %}
+
+{% block page_content %}
+<div class="page_content">
+	<h1>你好啊！{{ name }}!</h1>
+</div>
+{% endblock %}

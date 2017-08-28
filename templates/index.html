@@ -1,10 +1,13 @@
-<!DOCTYPE html>
-<html lang="zh">
-<head>
-	<meta charset="utf-8">
-	<title>Hello World！</title>
-</head>
-<body>
-	<h1>Flask版的你好世界？</h1>
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %} Index {% endblock %}
+{% block head %}
+	{{ super() }}
+	<style>
+		h1 {
+			color: red;
+		}
+	</style>
+{% endblock %}
+{% block content %}
+	<h1>模版版！你好世界！</h1>
+{% endblock %}

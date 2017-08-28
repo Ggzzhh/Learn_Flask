@@ -1,0 +1,39 @@
+{% extends "bootstrap/base.html" %}}
+
+{% block html_attribs %} lang='zh-CN' {% endblock html_attribs %}
+
+{% block title %} Flasky {% endblock title %}
+{% block meta %}
+	{{ super() }}
+	<meta charset="UTF-8" />
+	<meta name="author" content="Ggzzhh" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+{% endblock %}
+
+{% block navbar %}
+<div class="navbar navbar-inverse" role="navigation">
+	<div class="container">
+		<div class="navbar-header">
+			<button class="navbar-toggle" data-toggle="collapse"
+							data-targer=".navbar-collapse">
+				<span class="sr-only">切换导航</span>
+				<span class="icon-bar">1</span>
+				<span class="icon-bar">2</span>
+				<span class="icon-bar">3</span>
+			</button>
+			<a class="navbar-brand" href="/">Flasky</a>
+		</div>
+		<div class="navbar-collapse collapse">
+			<ul class="nav navbar-nav">
+				<li><a href="/">Home</a></li>
+			</ul>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+	{% block page_content %}{% endblock %}
+</div>
+{% endblock %}
