@@ -15,8 +15,8 @@ Jinja2模版在html中的各种应用
     Hello, {{ user }}!
 {% else %}
     Hello, Stranger!
-{% endif %}
-```
+{% endif %}```
+
 
     * 如 for 循环结构
 ```
@@ -24,8 +24,8 @@ Jinja2模版在html中的各种应用
     {% for comment in comments %}
         <li>{{ comment }}</li>
     {% endfor %}
-</ul>
-```
+</ul>```
+
 
     * Jinja2 支持宏  宏是类似函数的存在 如：
 ```
@@ -35,5 +35,4 @@ Jinja2模版在html中的各种应用
 
 {% for comment in comments %}
     {{ macro.render_comment(comment) }}
-{% endfor %}
-```
+{% endfor %}```
