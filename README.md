@@ -113,3 +113,5 @@ Web表单
 数据库
 ------
 * 下载使用flask-SQLAlchemy管理数据库
+    * 数据可参考python中文学习大本营 http://www.pythondoc.com/
+    * 进度5.5
