@@ -1,4 +1,6 @@
 {% extends 'base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
 {% block title %} Index {% endblock %}
 {% block head %}
 	{{ super() }}
@@ -8,6 +10,11 @@
 		}
 	</style>
 {% endblock %}
-{% block content %}
-	<h1>模版版！你好世界！</h1>
+
+{% block page_content %}
+<div class="page_header">
+	<h1>欢迎来到{% if name %}{{ name }}{% else %}我{% endif %}的世界</h1>
+</div>
+{{ wtf.quick_form(form) }}
+
 {% endblock %}
