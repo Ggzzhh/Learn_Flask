@@ -1,0 +1,13 @@
+# 这里存放本程序需要的所有依赖包
+Flask             0.12.2
+Flask-Bootstrap   3.3.7.1
+Flask-Mail        0.9.1
+Flask-Migrate     2.1.1
+Flask-Script      2.0.5
+Flask-SQLAlchemy  2.2
+Flask-WTF         0.14.2
+
+下面是附带的 一般不用下载
+Jinja2            2.9.6
+Mako              1.0.7
+WTForms           2.1

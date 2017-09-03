@@ -18,10 +18,18 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 # 导入数据库
 from flask_sqlalchemy import SQLAlchemy
+# 配置flask_migrate
+from flask_migrate import Migrate, MigrateCommand
+# smtp邮箱
+from flask_mail import Mail
+
+
 
 basedir = os.path.abspath(os.path.dirname(__file__)) # 获取文件地址
 
 app = Flask(__name__) # 创建一个app
+
+
 # App 相关设置
 # 设置密匙
 app.config['SECRET_KEY'] = '!(()(!$'
@@ -30,11 +38,22 @@ app.config['SQLALCHEMY_DATABASE_URI'] = \
     'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 # 每次请求结束后自动提交数据库变动设置为true
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+# Flask-SQLAlchemy 将会追踪对象的修改并且发送信号
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+# 邮箱相关设置
+app.config['MAIL_SERVER'] = 'smtp.qq.com' # 服务器地址
+app.config['MAIL_PORT'] = 465 # 服务器端口号
+app.config['MAIL_USE_TLS'] = True # 开启安全协议
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME') # 在环境中获取账号密码
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+
 
 db = SQLAlchemy(app) # 创建sqlalchemy实例数据库
 manager = Manager(app) # 对app采用管理
 bootstrap = Bootstrap(app) # 使用bootstrao对app进行修饰
-
+migrate = Migrate(app, db) # 配置迁移 并将MigrateCommand类附加到manager对象上
+manager.add_command('db', MigrateCommand)
+mail = Mail(app) # 对app使用smtp邮箱脚本
 
 # 创建一个表单类
 class NameForm(FlaskForm):
@@ -48,7 +67,7 @@ class Role(db.Model):
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), unique=True)
-    users = db.relationship('User', backref='role')
+    users = db.relationship('User', backref='role', lazy='dynamic')
 
     def __repr__(self):
         return '<Role %r>' % self.name
@@ -60,8 +79,15 @@ class User(db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     
     def __repr__(self):
-        return '<User %r>' % self.name
+        return '<User %r>' % self.username
 
+
+# 为shell命令添加一个上下文 使其自动导入数据库实例和模型
+@manager.shell
+def make_shell_context():
+    return dict(app=app, db=db, User=User, Role=Role)
+
+# manager.add_command("shell", Shell(make_context=make_shell_context))
 # 返回的页面配置
 
 @app.route('/', methods=['GET', 'POST'])
@@ -69,13 +95,22 @@ def index():
     # 获取首部user-agent（浏览器信息）
     # user_agent = request.headers.get('User-Agent')
     form = NameForm()
+    # 如果提交了表单
     if form.validate_on_submit():
-        old_name = session.get('name')
-        if old_name is not None and old_name != form.name.data:
-            flash('你的名字变成了' + form.name.data)
+        # 查询数据库中是否有该用户
+        user = User.query.filter_by(username=form.name.data).first()
+        if user is None:
+            user = User(username=form.name.data)
+            db.session.add(user)
+            session['known'] = False
+        else:
+            session['known'] = True
         session['name'] = form.name.data
+        form.name.data = '请输入姓名？？？'
         return redirect(url_for('index'))
-    return render_template('index.html', form=form, name=session.get('name'))
+    return render_template('index.html', form = form, name = session.get(
+        'name'), known = session.get('known', False))
+        
 
 @app.route('/user/<name>')
 def user(name):

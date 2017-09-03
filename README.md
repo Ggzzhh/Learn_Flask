@@ -123,9 +123,131 @@ Web表单
         * 'joined' 告诉 SQLAlchemy 使用 JOIN 语句作为父级在同一查询中来加载关系。
         * 'subquery' 类似 'joined' ，但是 SQLAlchemy 会使用子查询。
         * 'dynamic' 在有多条数据的时候是特别有用的。不是直接加载这些数据，也就是多对多。
+            它返回一个尚未执行的查询，可以在其之上添加过滤器。
         * 定义backref的lazy属性： backref = db.backref('role', lazy='dynamic')
         * 如果要变成一对一关系： uselist = False 即可，表示不适用列表
         * order_by 指定关系中的排序方式
         * secondary 指定多对多中的关系表的名字
         * secondaryjoin 无法自行决定时，指定多对多关系中的二级联结条件
 
+* 数据库操作
+
+    * 创建表
+        * db.create_all() 根据模型创建数据库
+        * 因为它不会更新已有表 所以表结构更改后需要粗暴的先删除旧表再创建新表
+        * db.drop_all() 删除所有表？？然后再创建 db.create_all()
+
+    * 插入行
+        * 首先为数据库表中插入内容，如： user_john = User(username='john', role=admin_role)
+        此时所有的Id都为None 因为还未提交到数据库  所以Id未写入数据。
+        * 然后添加到数据库的会话中，db.session.add(user_john)或db.session.add_all([user1,
+        user2, user3 ...])
+        * 最后写入进数据库 db.session.commit() 之后id属性就被赋值了
+        * 数据库会话也可以回滚，调用 db.session.rollback()后，添加到数据库会话中的所有对象
+        都会还原到它们在数据库时的状态，或者取消当前修改。
+
+    * 修改行
+        * 在数据库会话上用add()方法也能更新模型。
+        ```python
+        admin_role.name = 'Nwe Name'
+        db.session.add(admin_role)
+        db.session.commit()
+        ```
+
+    * 删除行
+        * 使用delete()方法
+        ```python
+        db.session.delete(mod_role)
+        db.session.commit()
+        ```
+        * 插入跟删除和更新一样，提交（commit)后才会执行
+
+    * 查询行
+        * 查询某个表的所有内容 Table.query.all()
+        * 使用过滤器(filter)可以更精确的查询
+            如：User.query.filter_by(role=user_role).all()
+        * 常用过滤器如下：
+        ```python
+         filter()       # 把过滤器添加到一个原查询上，返回一个新查询
+         filter_by()    # 把等值过滤器添加到一个原查询上，返回一个新查询
+         limit()        # 使用指定的值限制原返回查询的结果数量，返回一个新查询
+         offset()       # 偏移原查询返回的结果，返回一个新查询
+         order_by()     # 根据指定条件对原查询进行排序，返回一个新查询
+         group_by()     # 根据指定条件对原查询结果进行分组，返回一个新查询
+        ```
+        * 通过调用all()方法执行查询，以列表的形式返回所有查询结果
+        * first() 或 first_or_404() 返回第一个查询结果，如果没有返回None或者终止请求，返回404错误。
+        * get() 或 get_or_404() 返回指定主键对应的行，如果没有返回None或者终止请求，返回404错误。
+        * count() 返回所有结果的数量
+        * paginate() 返回一个分页对象？, 它包含指定范围内的结果
+
+    * 在视图上操作数据库 见hello.py
+    * 为shell命令添加一个上下文 使其自动导入数据库实例和模型 之后可免于每次在shell中导入数据库
+        可使用 装饰器@manager.shell 修饰函数 例：
+        ```python
+        @manager.shell
+        def make_shell_context():
+            return dict(app=app, db=db, User=User, Role=Role)
+
+        ```
+
+    * 使用 Flask-Migrate 实现数据库迁移
+        * 变更表结构后最好使用数据库迁移 这样能避免数据丢失或者重新写入
+        * 安装后的配置请参见hello.py
+        * 配置迁移 并将MigrateCommand类附加到manager对象上
+            然后再命令行运行 init 子命令创建迁移仓库
+            如： python3 hello.py db init
+        * 创建迁移脚本
+            upgrade()函数把迁移中的改动应用到数据库， downgrade()函数则是将改动删除
+            使用migrate子命令自动创建迁移脚本 不一定总是对的 需要检查
+            如： python3 hello.py db migrate -m "initial migrate"
+        * 检查并且修整好迁移脚本后 使用db upgrade 命令把迁移应用到数据库中
+            python3 hello.py db upgrade
+
+
+
+电子邮件
+-------
+
+* 包装了python内置函数smtplib的flask拓展 Flask-Mail
+    * 为了避免直接把数据写入到文件中 所以把账户跟密码写入环境变量
+        * Linux或Mac：
+            `$ export MAIL_USERNAME=<Email username>`
+            `$ export MAIL_PASSWORD=<Email password>`
+        * Windows：
+            `$ set MAIL_USERNAME=<Email username>`
+            `$ set MAIL_PASSWORD=<Email password>`
+        * mac中输入export查看设置的账号密码
+    * 进行初始化Flask-Mail 在hello.py中 因为需要打开设置 所以没有试验
+    * 因为可能会卡顿所以需要异步发送邮件 使用threading
+
+
+大型程序的结构
+------------
+
+* 基本项目结构
+    ```
+    |-flasky
+        |-app/  # Flask程序一般都保存在这里
+            |-templates/
+            |-static/
+            |-main/
+                |-__init__.py
+                |-errors.py
+                |-forms.py
+                |-views.py
+            |-__init__.py
+            |-email.py
+            |-models.py
+        |-migrations/ # 迁移数据库脚本
+        |-tests/ # 单元测试
+            |-__init__.py
+            |-test*.py
+        |-venv/ # 存放虚拟环境
+        |-requirements.txt # 列出所有依赖包，以便在其他电脑中重新生成相同的虚拟环境
+        |-config.py # 存储配置
+        |-manage.py # 用于启动程序以及其他程序任务
+    ```
+
+    * 定义了工厂函数后 让定义路由变得复杂 所以采用蓝本 Blueprint 在main的init中
+    * 测试章节 未完成
