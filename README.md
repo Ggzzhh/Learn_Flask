@@ -114,4 +114,18 @@ Web表单
 ------
 * 下载使用flask-SQLAlchemy管理数据库
     * 数据可参考python中文学习大本营 http://www.pythondoc.com/
-    * 进度5.5
+    * 简单例子可在hello.py中查看
+    * 例子中的一对多 中的一要设置关系属性 relationship(关联表名, backref, lazy等) 具体如下：
+        * backref 对关联的表的反向引用 比如role中设置的backref=role 关联的表示users
+        那么users的实例就可以调用user1.role来查看user1的角色了
+        * lazy 指定如何加载相关记录
+        * 'select' (默认值) 就是说 SQLAlchemy 会使用一个标准的 select 语句必要时一次加载数据。
+        * 'joined' 告诉 SQLAlchemy 使用 JOIN 语句作为父级在同一查询中来加载关系。
+        * 'subquery' 类似 'joined' ，但是 SQLAlchemy 会使用子查询。
+        * 'dynamic' 在有多条数据的时候是特别有用的。不是直接加载这些数据，也就是多对多。
+        * 定义backref的lazy属性： backref = db.backref('role', lazy='dynamic')
+        * 如果要变成一对一关系： uselist = False 即可，表示不适用列表
+        * order_by 指定关系中的排序方式
+        * secondary 指定多对多中的关系表的名字
+        * secondaryjoin 无法自行决定时，指定多对多关系中的二级联结条件
+
