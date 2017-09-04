@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block title %}用户登陆{% endblock %}
+
+{% block page_content %}
+	<div class="page-header">
+		<div class="jumbotron">
+			<h2 class="text-center">登录</h2>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<form method="post">
+			{{ form.hidden_tag() }}
+			<div class="form-group has-feedback">
+				{{ form.email.label }}{{ form.email(class='form-control') }}
+			</div>
+			<div class="form-group has-feedback">
+				{{ form.password.label }}{{ form.password(class='form-control') }}
+			</div>
+			<div class="checkbox">
+				<label>{{ form.remember_me() }}{{ form.remember_me.text }}</label>
+			</div>
+				{{ form.submit(class='btn btn-info') }}
+		</form>
+	</div>
+{% endblock %}

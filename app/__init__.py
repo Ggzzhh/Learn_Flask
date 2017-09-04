@@ -7,11 +7,16 @@ from flask_mail import Mail
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from config import config
+from flask_login import LoginManager
 
 bootstrap = Bootstrap()
 mail = Mail()
 moment = Moment()
 db = SQLAlchemy()
+login_manager = LoginManager()
+# 用户回话安全等级 None basic strong
+login_manager.session_protection = 'strong'
+login_manager.login_view = 'auth.login'
 
 # 工厂函数
 def create_app(config_name):
@@ -27,10 +32,14 @@ def create_app(config_name):
     mail.init_app(app)
     moment.init_app(app)
     db.init_app(app)
+    login_manager.init_app(app)
     
     # 附加路由和自定义的s错误页面
     from .main import main as main_blueprint
+    from .auth import auth as auth_blueprint
     # app的注册蓝本
-    app.register_blueprint(main_blueprint,)
+    app.register_blueprint(main_blueprint, )
+    # url_prefix 是为所有的url加上的前缀
+    app.register_blueprint(auth_blueprint, url_prefix='/auth')
     
     return app

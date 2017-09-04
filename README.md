@@ -250,4 +250,32 @@ Web表单
     ```
 
     * 定义了工厂函数后 让定义路由变得复杂 所以采用蓝本 Blueprint 在main的init中
-    * 测试章节 未完成
+    * 测试章节 在tests中
+
+
+用户认证
+-------
+* 有新的依赖包
+    * Flask-Login 管理登录的用户会话
+    * Werkzeug 计算密码散列值并进行核对
+    * itsdangerous 生成并核对加密安全令牌
+
+* 使用Werkzeug实现密码散列
+    * generate_password_hash(password, method=pbkdf2:sha1, salt_lenget=8)
+        这个函数将原始密码作为输入， 以字符串形式输入密码散列值，输入加密后的值可保存
+        在数据库中.
+    * check_password_hash(hash, password): 这个函数的参数是从数据库中获取的密码散列值
+    和用户输入的密码，返回值true 则表明密码正确
+
+* 不同的程序功能使用不同的蓝本 创建认证蓝本auth
+    创建蓝本的流程
+    1. 在文件夹的__init__.py中创建蓝本 先引入蓝本 然后创建 最后导入视图函数
+    2. 设置视图函数
+    3. 在app/__init__中附加蓝本
+
+* 使用Flask-login认证
+    * 要使用flask-login需要实现四个方法
+    * 这些可以在模型中实现 也可以采用默认实现 在Flask-login中有一个UserMixin类其中包含这些
+        方法（is_authenticated(是否登录), is_active(是否允许登录)
+        is_anonymous(是否普通用户)  get_id(返回用户唯一Id)）
+
