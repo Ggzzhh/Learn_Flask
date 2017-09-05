@@ -17,6 +17,8 @@ login_manager = LoginManager()
 # 用户回话安全等级 None basic strong
 login_manager.session_protection = 'strong'
 login_manager.login_view = 'auth.login'
+login_manager.login_message = "请登录来访问这个页面"
+login_manager.login_message_category = "info"
 
 # 工厂函数
 def create_app(config_name):

@@ -279,3 +279,17 @@ Web表单
         方法（is_authenticated(是否登录), is_active(是否允许登录)
         is_anonymous(是否普通用户)  get_id(返回用户唯一Id)）
 
+* 使用itsdangerous生成确认令牌
+    * 导入TimedJSONWebSignatureSerializer类
+    ```python
+    from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+    ```
+    * Serializer接收一个密匙，生成一个有过期时间的JSON WEB签名
+    * dumps()方法为指定的数据生成一个加密签名
+    * loads()方法可以解码dumps()生成的的加密令牌，如果正确返回原数据，否则抛出异常
+    ```python
+    s = Serializer(密匙, expires_in=3600) # 过期时间是3600s
+    token = s.dumps(数据)
+    data = s.loads(token) # data 值 数据
+    ```
+    * 定义email文件发送验证信息

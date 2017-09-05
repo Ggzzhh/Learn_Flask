@@ -6,17 +6,17 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 # 基础设置
 class Config:
     # 设置密匙
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'gzhnyc'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'GZHNYC'
     # 每次请求结束后自动提交数据库变动设置为true
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     # Flask-SQLAlchemy 将会追踪对象的修改并且发送信号
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     # 邮箱主题前缀
-    FLASK_MAIL_SUBJECT_PREFIX = '[Flasky-test]'
+    FLASKY_MAIL_SUBJECT_PREFIX = '[Flasky-test]'
     # 寄件人
-    FLASK_MAIL_SENDER = '某管理员 <3272377652@qq.com>'
+    FLASKY_MAIL_SENDER = '某管理员 <3272377652@qq.com>'
     # 管理员邮箱
-    FLASK_ADMIN = os.environ.get('FLASK_ADMIN')
+    FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
     
     @staticmethod
     def init_app(app):

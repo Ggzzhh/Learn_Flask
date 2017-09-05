@@ -3,23 +3,22 @@
 
 {% block title %} Index {% endblock %}
 {% block head %}
-    {{ super() }}
-    <style>
-        h1 {
-            color: red;
-        }
-    </style>
+	{{ super() }}
+	<style>
+		.text-color {
+			color: deepskyblue;
+		}
+	</style>
 {% endblock %}
 
 {% block page_content %}
-    <div class="page_header">
-        <h1>欢迎来到{% if name %}{{ name }}{% else %}我{% endif %}的世界</h1>
-        {% if not known %}
-            <p>很高兴见到你</p>
-        {% else %}
-            <p>欢迎回来！{{ name }}</p>
-        {% endif %}
-    </div>
-    {{ wtf.quick_form(form) }}
-
+	<div class="jumbotron text-color">
+		<h1>
+			{% if current_user.is_authenticated %}
+				{{ current_user.username }}
+			{% else %}
+				新用户
+			{% endif %}
+			你好！</h1>
+	</div>
 {% endblock %}
