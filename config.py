@@ -14,9 +14,15 @@ class Config:
     # 邮箱主题前缀
     FLASKY_MAIL_SUBJECT_PREFIX = '[Flasky-test]'
     # 寄件人
-    FLASKY_MAIL_SENDER = '某管理员 <3272377652@qq.com>'
+    FLASKY_MAIL_SENDER = '某管理员 <gggzh@139.com>'
     # 管理员邮箱
     FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
+    MAIL_SERVER = 'smtp.139.com'  # 服务器地址
+    MAIL_PORT = 465  # 服务器端口号
+    MAIL_USE_TLS = False # 默认为False
+    MAIL_USE_SSL = True # 打开安全协议
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')  # 在环境变量中获取账号
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')  # 在环境变量中获取密码
     
     @staticmethod
     def init_app(app):
@@ -26,11 +32,6 @@ class Config:
 # 开发配置
 class DevelopmentConfig(Config):
     DEBUG = True # 调试开关
-    MAIL_SERVER = 'smtp.qq.com' # 服务器地址
-    MAIL_PPORT = 465 # 服务器端口号
-    MAIL_USE_TLS = True # 打开安全协议
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') # 在环境变量中获取账号
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') # 在环境变量中获取密码
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
     

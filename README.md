@@ -214,9 +214,15 @@ Web表单
         * Linux或Mac：
             `$ export MAIL_USERNAME=<Email username>`
             `$ export MAIL_PASSWORD=<Email password>`
+            查看 export
         * Windows：
+            命令提示符：
             `$ set MAIL_USERNAME=<Email username>`
             `$ set MAIL_PASSWORD=<Email password>`
+            查看 ：set
+            PowerShell:
+            `$env:MAIL_USERNAME='<EMAIL username>'`
+             查看： ls env:
         * mac中输入export查看设置的账号密码
     * 进行初始化Flask-Mail 在hello.py中 因为需要打开设置 所以没有试验
     * 因为可能会卡顿所以需要异步发送邮件 使用threading
@@ -293,3 +299,4 @@ Web表单
     data = s.loads(token) # data 值 数据
     ```
     * 定义email文件发送验证信息
+    * 会出现多种小错误 比如环境变量中的账号密码错误
