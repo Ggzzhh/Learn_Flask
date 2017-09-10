@@ -35,8 +35,12 @@
 				<ul class="nav navbar-nav navbar-right">
 					{% if current_user.is_authenticated %}
 						<li><a href="{{ url_for('auth.logout') }}">登 出</a></li>
+						<li><a href="{{ url_for('auth.change_password') }}">修改密码</a></li>
+						<li><a href="{{ url_for('auth.change_email_request')
+                    }}">修改邮箱</a></li>
 					{% else %}
 						<li><a href="{{ url_for('auth.login') }}">登 录</a></li>
+						<li><a href="{{ url_for('auth.register') }}" >注 册</a></li>
 					{% endif %}
 				</ul>
 			</div>
@@ -52,6 +56,6 @@
 				{{ message }}
 			</div>
 		{% endfor %}
-		{% block page_content %}{% endblock %}
+		{% block page_content %}{% endblock page_content%}
 	</div>
 {% endblock %}

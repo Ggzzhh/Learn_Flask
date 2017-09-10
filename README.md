@@ -298,5 +298,19 @@ Web表单
     token = s.dumps(数据)
     data = s.loads(token) # data 值 数据
     ```
-    * 定义email文件发送验证信息
-    * 会出现多种小错误 比如环境变量中的账号密码错误
+
+* 出现的错误或者重要的事情
+    * 发送邮件会出现多种小错误 比如环境变量中的账号密码错误
+    * 自己实现修改密码以及重设密码、修改邮箱的功能
+    * _external=True 参数要求程序生成完整的 URL，其中包含协议(http:// 或 https://)、主机名和端口。
+    * url_for 作用的是函数，而不是路径
+    * 当我们在表单类里面定义了诸如 “Validate_字段名”形式的函数时，
+      Flask在检查相应字段时会对该函数一起进行调用，
+      利用这种形式我们可以自定义一些限制规则，如下面的代码，
+      我们定义了一个函数validate_new_email用来检查email是否在数据库中存在。
+      ```python
+      def validate_new_email(self, field):
+          """当函数以validate_打头时， 检查字段时候会一起调用本函数"""
+          if User.query.filter_by(email=field.data).first():
+              raise ValidationError("该邮箱已经被注册！")
+      ```

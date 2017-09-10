@@ -12,7 +12,8 @@
 {% endblock %}
 
 {% block page_content %}
-	<div class="jumbotron text-color">
+    <div class="col-md-2"></div>
+	<div class="jumbotron text-color col-md-8">
 		<h1>
 			{% if current_user.is_authenticated %}
 				{{ current_user.username }}
@@ -21,4 +22,5 @@
 			{% endif %}
 			你好！</h1>
 	</div>
+    <div class="col-md-2"></div>
 {% endblock %}

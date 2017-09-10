@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block title %} 设置新密码 {% endblock title %}
+
+{% block page_content %}
+    <div class="col-md-3"></div>
+    <div class="text-left col-md-7">
+        <h1 class="text-primary">设置新密码</h1>
+        <hr />
+		    {{ wtf.quick_form(form) }}
+    </div>
+{% endblock page_content %}

@@ -3,7 +3,7 @@
 # -*- coding:utf-8 -*-
 
 # flask拓展 flask-wtf
-from flask_wtf import FlaskForm, Form
+from flask_wtf import FlaskForm
 # stringField 就是type=text的input  submit同理
 from wtforms import StringField, SubmitField, PasswordField, BooleanField
 # 导入验证器 的要求
@@ -13,7 +13,7 @@ from ..models import User
 
 
 # 注册表单
-class RegistrationFrom(Form):
+class RegistrationFrom(FlaskForm):
     email = StringField("邮箱：", validators=[DataRequired(), Length(1, 64),
                                            Email()])
     username = StringField("用户名：", validators=[
@@ -40,3 +40,41 @@ class LoginForm(FlaskForm):
     password = PasswordField('密码：', validators=[DataRequired()])
     remember_me = BooleanField('记住我！')
     submit = SubmitField('登 录')
+
+
+class ResetForm(FlaskForm):
+    """重置密码表单"""
+    email = StringField("邮箱", validators=[DataRequired(), Length(1, 64),
+                                          Email()])
+    submit = SubmitField('确定')
+    
+
+class ResetFormRequest(FlaskForm):
+    """重置密码表单 修改"""
+    password = PasswordField("新密码：", validators=[DataRequired(), EqualTo(
+        'password2', message="两次密码不一致！")])
+    password2 = PasswordField("请再次输入新密码：", validators=[DataRequired()])
+    submit = SubmitField("确定!")
+    
+    
+class ChangePasswordForm(FlaskForm):
+    """修改密码表单"""
+    old_password = PasswordField("旧密码：", validators=[DataRequired()])
+    password = PasswordField("新密码：", validators=[DataRequired(), EqualTo(
+        'password2', message="两次密码不一致！")])
+    password2 = PasswordField("请再次输入新密码：", validators=[DataRequired()])
+    submit = SubmitField("确定!")
+    
+    
+class ChangeEmailForm(FlaskForm):
+    """修改登录邮箱"""
+    password = PasswordField("请输入密码：", validators=[DataRequired()])
+    new_email = StringField("新邮箱地址",
+                            validators=[DataRequired(),Length(1, 64), Email()])
+    submit = SubmitField("确定!")
+    
+    def validate_new_email(self, field):
+        """当函数以validate_打头时， 检查字段时候会一起调用本函数"""
+        if User.query.filter_by(email=field.data).first():
+            raise ValidationError("该邮箱已经被注册！")
+    

@@ -53,6 +53,17 @@ class User(UserMixin, db.Model):
         s = Serializer(current_app.config['SECRET_KEY'], expires_in=3600)
         return s.dumps({'confirm': self.id})
 
+    @staticmethod
+    def my_get_id(token):
+        """解码token获取用户id"""
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except:
+            return None
+        return data.get('confirm')
+        
+
     def confirm(self, token):
         """验证邮箱"""
         s = Serializer(current_app.config['SECRET_KEY'])
@@ -61,10 +72,31 @@ class User(UserMixin, db.Model):
         except:
             return False
         if data.get('confirm') != self.id:
+        # data = self.get_id(token)
+        # if data != self.id:
             return False
         self.confirmed = True
         db.session.add(self)
         return True
+    
+    def change_email(self, token):
+        """更改邮箱"""
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except:
+            return False
+        self.email = data.get('email')
+        db.session.add(self)
+        return True
+    
+    def generate_email_change_token(self, email=None):
+        """生产邮箱更改使用的令牌"""
+        if email is None:
+            email = self.email
+        s = Serializer(current_app.config['SECRET_KEY'])
+        return s.dumps({'email': email})
+    
 
     def __repr__(self):
         return '<User %r>' % self.username
