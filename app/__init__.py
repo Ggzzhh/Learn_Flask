@@ -20,6 +20,10 @@ login_manager.login_view = 'auth.login'
 login_manager.login_message = "请登录来访问这个页面"
 login_manager.login_message_category = "info"
 
+from .models import AnonymousUser
+login_manager.anonymous_user = AnonymousUser
+
+
 # 工厂函数
 def create_app(config_name):
     # ...
@@ -28,14 +32,14 @@ def create_app(config_name):
     app.config.from_object(config[config_name])
     # 初始化app配置
     config[config_name].init_app(app)
-    
+
     # 初始化各类拓展模块
     bootstrap.init_app(app)
     mail.init_app(app)
     moment.init_app(app)
     db.init_app(app)
     login_manager.init_app(app)
-    
+
     # 附加路由和自定义的s错误页面
     from .main import main as main_blueprint
     from .auth import auth as auth_blueprint
@@ -43,5 +47,5 @@ def create_app(config_name):
     app.register_blueprint(main_blueprint, )
     # url_prefix 是为所有的url加上的前缀
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
-    
+
     return app

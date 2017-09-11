@@ -7,3 +7,11 @@ from flask import Blueprint
 main = Blueprint('main', __name__)
 # 采用这个顺序是避免循环导入依赖
 from . import views, errors
+from ..models import Permission
+
+
+# 上下文管理器 也可以叫做引用池
+# 这样做即可避免在每次调用render_template()时都多添加一个模版参数
+@main.app_context_processor
+def inject_permission():
+    return dict(Permission=Permission)

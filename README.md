@@ -314,3 +314,73 @@ Web表单
           if User.query.filter_by(email=field.data).first():
               raise ValidationError("该邮箱已经被注册！")
       ```
+
+* 用户角色
+    * 创建角色表，（id，名字，默认值，权限，用户）
+        只有一个角色的默认值设置为true 其余为默认的False
+
+    * flasky来说，程序的权限分为：
+        关注用户        0b0000000001  (0x01)    关注其他用户
+        发表评论        0b0000000010  (0x02)    在他人写的文章中发布评论
+        撰写文章        0b0000000100  (0x04)    写自己的原创文章
+        管理评论        0b0000001000  (0x08)    查处他人发布的不当评论
+        管理权限        0b1000000000  (0x80)    管理网站，管理员
+
+    * 权限常量
+        ```python
+        class Permission:
+            FOLLOW = 0x01
+            COMMENT = 0x02
+            WRITE_ARTICLES = 0x04
+            MODERATE_COMMENTS = 0x08
+            ADMINISTER = 0x80
+        ```
+        还有三个权限未定义 待拓展
+
+    * 用户角色
+        匿  名    0b0000000000 (0x00)     未登录的用户。只有阅读权限
+        用  户    0b0000000111 (0x07)     可以发布文章，发表评论和关注其他的权限，默认角色
+        协  管    0b0000001111 (0x0f)     增加审查不当评论的权限
+        管  理    0b1111111111 (0xff)     具有所有权限，包括修改其他用户角色的权限
+
+    * 这些权限以及角色都是通过大小来判断的 在python中插入时使用
+        "User": (0x01 | 0x02 | 0x04) 来确定权限
+        这是按位或运算  结果为0x07跟用户的数字是一样的
+        比如 0x01 | 0x02  ==  00000001 | 00000010 = 00000011 # 十六进制中的0x03
+        0x03 | 0x04 == 00000011 | 00000100 = 00000111 # 十六进制0x07
+        按位或运算 就是把其余进制的数字转换为2进制然后按着位数进行或运算
+        按照 1|1 = 1  1|0 = 1 0|0 = 0 进行运算然后得出结果即可
+
+        & 是按位与 与按位或相同 不同的是进行与运算
+        按照 1&1 = 1 1&0 = 0 0&0 = 0 来进行运算 然后转换为所需进制即可
+
+    * 赋予角色
+        通过修改User类来赋予角色
+
+    * 角色验证
+        * 先通过角色的所有权限进行（按位或）运算得出结果后
+        和要进行比较的权限进行 （按位与）运算 然后比较结果
+        如果角色中包含请求的所有权限位 则返回True
+        ```python
+        def can(self, permissions):
+            """检查用户是否有指定权限"""
+            return self.role is not None and (self.role.permissions &
+                                              permissions) == permissions
+        ```
+
+        * 出于一致性考虑加入了游客类，这样程序不用先检查用户是否登录，
+            就能调用current_user.can() 以及 current_user.is_administrator()
+
+        * 使用自定义修饰器，让视图函数只对有特定权限的用户开放，详情参见app/decorators.py
+
+        * @admin_required 可以还原成 @permission_required(Permission.ADMINISTER)
+        作用跟@login_required几乎一样
+
+        * 上下文管理器 也可以叫做引用池
+            下面的代码是把Permission类加入模版上下文
+            之后即可在HTML页面中进行调用
+        ```python
+        @main.app_context_processor
+        def inject_permission():
+            return dict(Permission=Permission)
+        ```
