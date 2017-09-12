@@ -1,9 +1,34 @@
 {% extends "base.html" %}}
 
-{% block title %}Flasky{% endblock %}
+{% block title %}Flasky--用户资料{% endblock %}
 
 {% block page_content %}
-<div class="page_content">
-	<h1>你好啊！{{ name }}!</h1>
-</div>
+	<div class="container-fluid row">
+		<div class="page-left col-xs-6 col-md-12">
+			<ul class="nav nav-tabs" id="tabs">
+				<li class="active"><a href="#profile" data-toggle="tab">个人资料</a></li>
+				<li ><a href="#change-password" data-toggle="tab">修改密码</a></li>
+				<li><a href="#change_email_request" data-toggle="tab">修改邮箱</a></li>
+			</ul>
+		</div>
+		<div class="tab-content">
+			<div class="tab-pane active" id="profile">
+				<iframe src="{{ url_for('main.edit_profile') }}" class="col-md-12
+				 col-xs-12 my_frame" height="800px" frameborder="0">
+				</iframe>
+			</div>
+			<div class="tab-pane" id="change-password">
+				<iframe  src="{{ url_for('auth.change_password') }}" class="col-md-12
+				 col-xs-12 my_frame" height="800px" frameborder="0">
+
+				</iframe>
+			</div>
+			<div class="tab-pane" id="change_email_request">
+				<iframe src="{{ url_for('auth.change_email_request') }}"
+								class="col-md-12 col-xs-12 my_frame" height="800px"
+								frameborder="0">
+				</iframe>
+			</div>
+		</div>
+	</div>
 {% endblock %}

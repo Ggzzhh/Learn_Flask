@@ -384,3 +384,6 @@ Web表单
         def inject_permission():
             return dict(Permission=Permission)
         ```
+
+    * iframe中提交表单 方法一： form属性添加target='_parent'
+    注意：target='_parent '如果后面多加了空格 提交后会新打开一个网页

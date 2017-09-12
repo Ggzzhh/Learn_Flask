@@ -1,0 +1,29 @@
+{% extends "bootstrap/base.html" %}}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block html_attribs %} lang='zh-CN' {% endblock html_attribs %}
+{% block head %}
+	<meta charset="UTF-8" />
+	<meta name="author" content="Ggzzhh" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	{{ super() }}
+	<style>
+		body {
+			padding-top: 70px;
+		}
+	</style>
+{% endblock head %}
+
+{% block content %}
+	<div class="container pad-top">
+		{% for message in get_flashed_messages() %}
+			<div class="alert alert-warning">
+				<button type="button" class="close" data-dismiss="alert">&times;</button>
+				{{ message }}
+			</div>
+		{% endfor %}
+		{% block page_content %}
+		{% endblock page_content%}
+	</div>
+
+{% endblock %}

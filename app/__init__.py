@@ -28,6 +28,8 @@ login_manager.anonymous_user = AnonymousUser
 def create_app(config_name):
     # ...
     app = Flask(__name__)
+    # 设置静态文件路径
+    # app.static_url_path = "static"
     # 设置程序名为配置文件中的config字典中的值
     app.config.from_object(config[config_name])
     # 初始化app配置

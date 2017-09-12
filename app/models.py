@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
+from datetime import datetime
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, AnonymousUserMixin
@@ -79,6 +80,12 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     # 在数据库中插入验证状态一栏
     confirmed = db.Column(db.Boolean, default=False)
+    # 用户资料
+    name = db.Column(db.String(64))  # 姓名
+    location = db.Column(db.String(64))  # 所在地
+    about_me = db.Column(db.Text())  # 自我介绍
+    member_since = db.Column(db.DateTime(), default=datetime.utcnow)  # 注册时间
+    last_seen = db.Column(db.DateTime(), default=datetime.utcnow)  # 最后登录时间
 
     # 对密码进行属性化并加密
     @property
@@ -147,6 +154,11 @@ class User(UserMixin, db.Model):
     def is_administrator(self):
         """检查用户是否是管理员"""
         return self.can(Permission.ADMINISTER)
+
+    def ping(self):
+        """刷新用户访问时间"""
+        self.last_seen = datetime.utcnow()
+        db.session.add(self)
 
     def __repr__(self):
         return '<User %r>' % self.username

@@ -1,0 +1,29 @@
+{% extends "tab_base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block title %} {{ current_user.username }} 的个人资料 {% endblock title %}
+
+{% block page_content %}
+    <div class="col-md-3"></div>
+    <div class="text-left col-md-7">
+        <h1 class="text-primary">编辑个人资料</h1>
+        <hr />
+{#			{{ wtf.quick_form(form) }}#}
+			<form method="post" target="_parent">
+					{{ form.hidden_tag() }}
+				<div class="form-group">
+					{{ form.name.label }}
+					{{ form.name(class='form-control') }}
+				</div>
+				<div class="form-group">
+					{{ form.location.label }}
+					{{ form.location(class='form-control') }}
+				</div>
+				<div class="form-group">
+					{{ form.about_me.label }}
+					{{ form.about_me(class='form-control', rows='3') }}
+				</div>
+				{{ form.submit(class="btn btn-info") }}
+			</form>
+    </div>
+{% endblock page_content %}
+
