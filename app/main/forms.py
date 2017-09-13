@@ -7,7 +7,9 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextAreaField, \
     BooleanField, SelectField
 # 导入验证器 的要求
-from wtforms.validators import DataRequired, Length, Email, Regexp
+from wtforms.validators import DataRequired, Length, \
+    Email, Regexp, ValidationError
+from ..models import Role, User
 
 
 class EditProfileForm(FlaskForm):
@@ -32,3 +34,21 @@ class EditProfileAdminForm(FlaskForm):
     location = StringField("所在地：", validators=[Length(0, 64)])
     about_me = TextAreaField("个人介绍")
     submit = SubmitField("确定!")
+
+    def __init__(self, user, *args, **kwargs):
+        super(EditProfileAdminForm, self).__init__(*args, **kwargs)
+        self.role.choices = [(role.id, role.name) for role in
+                             Role.query.order_by(Role.name).all()]
+        self.user = user
+
+    def validate_email(self, field):
+        """验证email是否被修改且修改后是否被注册，提交表单时验证"""
+        if field.date != self.user.email and \
+            User.query.filter_by(email=field.date).first():
+            raise ValidationError('邮箱已经被注册！')
+
+    def validate_username(self, field):
+        """验证修改后的用户名是否被注册"""
+        if field.date != self.user.username and \
+            User.query.filter_by(username=field.date).first():
+            raise ValidationError('用户名已经被注册！')

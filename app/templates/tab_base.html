@@ -3,8 +3,6 @@
 
 {% block html_attribs %} lang='zh-CN' {% endblock html_attribs %}
 {% block head %}
-	<meta charset="UTF-8" />
-	<meta name="author" content="Ggzzhh" />
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	{{ super() }}
 	<style>
@@ -12,6 +10,8 @@
 			padding-top: 70px;
 		}
 	</style>
+<script src="{{ url_for('static', filename='jquery.min.js') }}">
+</script>
 {% endblock head %}
 
 {% block content %}

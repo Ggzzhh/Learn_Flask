@@ -10,10 +10,16 @@
 		body {
 			padding-top: 70px;
 		}
+		.profile-thumbnail {
+			position: absolute;
+		}
+		.profile-header {
+			min-height: 260px;
+			margin-left: 280px;
+		}
 	</style>
 	<script src="{{ url_for('static', filename='jquery.min.js') }}">
 	</script>
-
 {% endblock head %}
 
 {% block navbar %}
@@ -44,7 +50,14 @@
 							<ul class="dropdown-menu">
 								<li><a href="{{ url_for('main.user',
 						username=current_user.username) }}">
-									个人资料</a></li>
+									个人中心</a></li>
+								<li><a href="{{ url_for('auth.change_password')
+												}}">修改密码</a></li>
+								<li><a href="{{ url_for('auth.change_email_request') }}">修改邮箱</a></li>
+								{% if current_user.is_administrator() %}
+									<li><a href="{{ url_for('main.edit_profile_admin',
+										id=current_user.id) }}">管理用户</a></li>
+								{% endif %}
 								<li><a href="{{ url_for('auth.logout') }}">退出登录</a></li>
 							</ul>
 						</li>
@@ -71,12 +84,12 @@
 
 
 	<script>
-	$(function () {
-			 $('li.dropdown').mouseover(function() {
-          $(this).addClass('open');
-			 }).mouseout(function() {
-			     $(this).removeClass('open');
-			 });
-  })
+      $(function () {
+          $('li.dropdown').mouseover(function() {
+              $(this).addClass('open');
+          }).mouseout(function() {
+              $(this).removeClass('open');
+          });
+      })
 	</script>
 {% endblock content %}

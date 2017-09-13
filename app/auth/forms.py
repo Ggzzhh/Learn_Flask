@@ -59,7 +59,8 @@ class ResetFormRequest(FlaskForm):
     
 class ChangePasswordForm(FlaskForm):
     """修改密码表单"""
-    old_password = PasswordField("旧密码：", validators=[DataRequired()])
+    old_password = PasswordField("旧密码：", validators=[DataRequired(), Length(
+        1, 64)])
     password = PasswordField("新密码：", validators=[DataRequired(), EqualTo(
         'password2', message="两次密码不一致！")])
     password2 = PasswordField("请再次输入新密码：", validators=[DataRequired()])
