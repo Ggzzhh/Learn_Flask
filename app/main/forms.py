@@ -10,6 +10,8 @@ from wtforms import StringField, SubmitField, TextAreaField, \
 from wtforms.validators import DataRequired, Length, \
     Email, Regexp, ValidationError
 from ..models import Role, User
+# 导入富文本编辑框
+from flask_pagedown.fields import PageDownField
 
 
 class EditProfileForm(FlaskForm):
@@ -44,11 +46,18 @@ class EditProfileAdminForm(FlaskForm):
     def validate_email(self, field):
         """验证email是否被修改且修改后是否被注册，提交表单时验证"""
         if field.date != self.user.email and \
-            User.query.filter_by(email=field.date).first():
+                User.query.filter_by(email=field.date).first():
             raise ValidationError('邮箱已经被注册！')
 
     def validate_username(self, field):
         """验证修改后的用户名是否被注册"""
         if field.date != self.user.username and \
-            User.query.filter_by(username=field.date).first():
+                User.query.filter_by(username=field.date).first():
             raise ValidationError('用户名已经被注册！')
+
+
+class PostForm(FlaskForm):
+    """博客文章表单"""
+    body = PageDownField("你在想什么？", validators=[DataRequired()],
+                         render_kw={"rows": 3})
+    submit = SubmitField("提交")

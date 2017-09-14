@@ -7,6 +7,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, AnonymousUserMixin
 from flask import current_app, request
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from markdown import markdown
+import bleach
 
 from . import login_manager
 
@@ -24,6 +26,52 @@ class Permission:
     WRITE_ARTICLES = 0x04   # 写自己的原创文章
     MODERATE_COMMENTS = 0x08  # 查处他人发布的不当评论
     ADMINISTER = 0x80  # 管理网站，管理员
+
+
+class Post(db.Model):
+    """博客文章"""
+    __tablename__ = 'posts'
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow())
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    body_html = db.Column(db.Text)
+
+    @staticmethod
+    def generate_fake(count=100):
+        """生成100条虚拟留言"""
+        from random import seed, randint
+        import forgery_py
+
+        seed()
+        user_count = User.query.count()
+        for i in range(count):
+            u = User.query.offset(randint(0, user_count-1)).first()
+            p = Post(body=forgery_py.lorem_ipsum.sentences(randint(1, 3)),
+                     timestamp=forgery_py.date.date(True),
+                     author=u)
+            db.session.add(p)
+            db.session.commit()
+
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        """
+        set事件的监听程序，只要body设置新值，该函数自动被调用
+        主要作用是把body字段中的文本渲染成HTML格式，结果在保存在body_html中
+        """
+        # 允许使用的html标签
+        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
+                        'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
+                        'h1', 'h2', 'h3', 'p']
+        # 转换过程
+        # 1.markdown将文本转换成html
+        # 2.bleach.clean 清除掉不符合白名单的标签
+        # 3.bleach.linkify 转换文本中类似url以及邮箱为a连接
+        target.body_html = bleach.linkify(bleach.clean(
+            markdown(value, output_format='html'),
+            tags=allowed_tags, strip=True))
+# 监听set事件 只要body设置了新值，就会调用on_changed_body
+db.event.listen(Post.body, 'set', Post.on_changed_body)
 
 
 # 创建数据库表
@@ -92,6 +140,8 @@ class User(UserMixin, db.Model):
     about_me = db.Column(db.Text())  # 自我介绍
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)  # 注册时间
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)  # 最后登录时间
+    # 博客相关
+    posts = db.relationship('Post', backref='author', lazy='dynamic')
 
     # 对密码进行属性化并加密
     @property
@@ -178,6 +228,30 @@ class User(UserMixin, db.Model):
         return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
             url=url, hash=my_hash, size=size, default=default, rating=rating
         )
+
+    @staticmethod
+    def generate_fake(count=100):
+        """生成虚拟数据 count控制数量"""
+        from sqlalchemy.exc import IntegrityError
+        from random import seed
+        import forgery_py
+
+        seed()
+        for i in range(count):
+            u = User(email=forgery_py.internet.email_address(),
+                     username=forgery_py.internet.user_name(True),
+                     password=forgery_py.lorem_ipsum.word(),
+                     confirmed=True,
+                     name=forgery_py.name.full_name(),
+                     location=forgery_py.address.city(),
+                     about_me=forgery_py.lorem_ipsum.sentence(),
+                     member_since=forgery_py.date.date(True)
+                     )
+            db.session.add(u)
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
 
     def __repr__(self):
         return '<User %r>' % self.username

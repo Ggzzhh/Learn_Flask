@@ -1,26 +1,40 @@
 {% extends 'base.html' %}
 {% import "bootstrap/wtf.html" as wtf %}
+{% import "_macros.html" as macros %}
 
-{% block title %} Index {% endblock %}
-{% block head %}
-	{{ super() }}
-	<style>
-		.text-color {
-			color: deepskyblue;
-		}
-	</style>
-{% endblock %}
+{% block title %} 首页 {% endblock %}
 
 {% block page_content %}
-    <div class="col-md-2"></div>
-	<div class="jumbotron text-color col-md-8">
-		<h1>
-			{% if current_user.is_authenticated %}
-				{{ current_user.username }}
-			{% else %}
-				新用户
+	<div class="col-md-1"></div>
+	<div class="col-md-10">
+		<div class="jumbotron text-color">
+			<h1>
+				{% if current_user.is_authenticated %}
+					{{ current_user.username }}
+				{% else %}
+					新用户
+				{% endif %}
+				你好！
+			</h1>
+		</div>
+		<hr />
+		<div>
+			{% if current_user.can(Permission.WRITE_ARTICLES) %}
+				{{ wtf.quick_form(form) }}
 			{% endif %}
-			你好！</h1>
+		</div>
+		{% include '_posts.html' %}
+		{% if pagination %}
+		<div class="pagination">
+			{{ macros.pagination_widget(pagination, '.index') }}
+		</div>
+		{% endif %}
 	</div>
-    <div class="col-md-2"></div>
+	<div class="col-md-1"></div>
 {% endblock %}
+
+{#添加markdown支持文件#}
+{% block scripts %}
+	{{ super() }}
+	{{ pagedown.include_pagedown() }}
+{% endblock scripts %}

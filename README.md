@@ -387,3 +387,59 @@ Web表单
 
     * iframe中提交表单 方法一： form属性添加target='_parent'
     注意：target='_parent '如果后面多加了空格 提交后会新打开一个网页
+
+
+博客文章等
+----------
+
+* sqlAlchemy 数据库 关联外键时使用表名+字段  如:
+    ```python
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    ```
+* 设定关系时使用类名 如：
+    ```python
+    posts = db.relationship('Post', backref='author', lazy='dynamic')
+    ```
+* 部分表单中这样可以添加属性 :
+    ```python
+    body = TextAreaField("你在想什么？", validators=[DataRequired()],
+                         render_kw={"rows": 3})
+    ```
+    * 使用render_kw={}添加自己想要的属性
+* 文章分页需要包含大量数据的测试数据库，自动化添加可以使用ForgeryPy 来生成虚拟信息
+* 区分生产环境跟开发环境
+* Table.query.offset(num).first() 查询过滤器 会跳过参数中指定的记录数量。
+* Flask-SQLAlchemy 分页对象属性
+    * items     当前页面中的记录
+    * query     分页的查询源
+    * page      当前页数
+    * perv_num  上一页的页数
+    * next_num  下一页的页数
+    * has_next  如果有下一页就返回True
+    * has_perv  如果有上一页就返回True
+    * pages     查询得到的总页数
+    * per_page  每页显示的查询数量
+    * total     查询返回的总记录数
+* Flask-SQLAlchemy 分页对象方法
+    * iter_pages(       一个迭代器，返回分页导航中显示的页数
+    * left_edge=2,      这个列表最左边显示2页
+    * left_current=2,   当前页面的左边显示2页
+    * right_current=3,  当前页面的右边显示3页
+    * right_edge=2)     这个列表最右边显示2页
+    * 如： 100页的列表、当前为50页  会显示：
+        1、2、...、48、49、50、51、52、53、...、99、100
+    * prev()            上一页的分页对象
+    * next()            下一页的分页对象
+* 新建一个专门存放宏的文件 _macros.html 存放分页模版宏
+
+* 使用Markdown 和 Flask-PageDown支持富文本文章, 所需环境为
+    * PageDown: 使用JavaScript实现的客户端Markdown到HTML的转换程序
+    * flask-PageDown: 为Flask包装的PageDown, 集成到Flask-WTF表单中
+    * markdown: 使用python实现的服务器端 Markdown到HTML的转换程序
+    * bleach: 使用python实现的 HTML清理器
+    * pip 安装均为小写即可
+
+* 为了安全起见， post只发送markdown源文本，然后在服务器上使用markdown转换为
+    html文件，然后使用bleach进行清理，确保只有几个允许使用的html标签
+
+* 每个文章需要一个单独的页面，这样方便分享或者编辑

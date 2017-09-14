@@ -4,12 +4,14 @@
 """这个是视图路由，类似网站地图"""
 
 from datetime import datetime
-from flask import render_template, session, redirect, url_for, abort, flash
+from flask import render_template, session, redirect, url_for, \
+    abort, flash, request, current_app
 from flask_login import login_required, current_user
 from . import main
-from .forms import EditProfileForm, EditProfileAdminForm
+from .forms import EditProfileForm, EditProfileAdminForm, \
+    PostForm
 from .. import db
-from ..models import User, Role
+from ..models import User, Role, Permission, Post
 from ..decorators import admin_required
 
 
@@ -17,7 +19,27 @@ from ..decorators import admin_required
 def index():
     # 获取首部user-agent（浏览器信息）
     # user_agent = request.headers.get('User-Agent')
-    return render_template("index.html")
+    form = PostForm()
+    if current_user.can(Permission.WRITE_ARTICLES) and \
+            form.validate_on_submit():
+        post = Post(body=form.body.data,
+                    author=current_user._get_current_object())
+        db.session.add(post)
+        return redirect(url_for('.index'))
+    # 按照书写时间降序排列
+    # posts = Post.query.order_by(Post.timestamp.desc()).all()
+    # 开始分页
+    # 获取渲染页数 默认值是1 也就是从首页开始 类型是整数
+    page = request.args.get('page', 1, type=int)
+    # paginate(page, ...)的返回值是pagination类型的 page是必须参数, per_page是每页显示数
+    # error_out 如果为True 超出页数范围会返回404 否则为空列表
+    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
+        page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
+        error_out=False
+    )
+    posts = pagination.items
+    return render_template("index.html", form=form, posts=posts,
+                           pagination=pagination)
 
 
 @main.route('/user/<username>')
@@ -26,7 +48,8 @@ def user(username):
     web_user = User.query.filter_by(username=username).first_or_404()
     if web_user is None:
         abort(404)
-    return render_template('user.html', user=web_user)
+    posts = web_user.posts.order_by(Post.timestamp.desc()).all()
+    return render_template('user.html', user=web_user, posts=posts)
 
 
 @main.route('/edit-profile', methods=["POST", "GET"])
@@ -74,5 +97,47 @@ def edit_profile_admin(id):
     form.location.data = user.location
     form.about_me.data = user.about_me
     return render_template('edit_profile.html', form=form, user=user)
+
+
+@main.route('/post/<int:id>')
+def post(id):
+    """文章固定连接"""
+    my_post = Post.query.get_or_404(id)
+    return render_template('post.html', posts=[my_post])
+
+
+@main.route('/edit/<int:id>', methods=["GET", "POST"])
+@login_required
+def edit(id):
+    """编辑文章路由视图"""
+    post = Post.query.get_or_404(id)
+    if current_user != post.author and \
+            not current_user.can(Permission.ADMINISTER):
+        abort(403)
+    form = PostForm()
+    if form.submit.data and form.validate_on_submit():
+        post.body = form.body.data
+        db.session.add(post)
+        flash('内容已经更新！')
+        return redirect(url_for('.post', id=post.id))
+    form.body.data = post.body
+    return render_template('edit_post.html', form=form)
+
+
+@main.route('/edit/<int:id>/delete', methods=["POST"])
+@login_required
+def delete(id):
+    """删除文章用"""
+    post = Post.query.get_or_404(id)
+    if current_user != post.author and \
+            not current_user.can(Permission.ADMINISTER):
+        abort(403)
+    try:
+        db.session.delete(post)
+    except:
+        flash('删除失败！ 原因？？？')
+    else:
+        flash('删除成功!')
+    return redirect(url_for('.index'))
 
 

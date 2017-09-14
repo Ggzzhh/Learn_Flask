@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Flasky-文章编辑{% endblock title %}
+
+{% block page_content %}
+	<div class="page-header">
+		<h1>编辑</h1>
+	</div>
+	<div class="form">
+		<form action="" target="" method="post"
+  class="form" role="form">
+			{{ form.hidden_tag() }}
+			<div class="form-group">
+				{{ form.body.label(class='control-label') }}
+				{{ form.body(class='form-control', required=True) }}
+				<div class="float-left">
+					{{ form.submit(class='btn btn-info') }}
+				</div>
+				<div class="float-right">
+					<button class="btn btn-danger" id="delete">删除</button>
+				</div>
+			</div>
+		</form>
+{#	{{ wtf.quick_form(form) }}#}
+	</div>
+{% endblock page_content %}
+
+{% block scripts %}
+	{{ super() }}
+	{{ pagedown.include_pagedown() }}
+	<script>
+	$(function () {
+			$('#delete').click(function (e) {
+			    e.preventDefault();
+					var id = $(this).attr('id');
+					$.ajax({
+							url: "{{ url_for('.delete', id=current_user.id) }}",
+							type: "POST",
+							success: function (resp) {
+							    if (resp.status !== 1){
+							        alert('出现错误！');
+									}
+									location.reload()
+              }
+					})
+      });
+  })
+	</script>
+{% endblock scripts %}
+
+
+
