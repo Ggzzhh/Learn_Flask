@@ -105,7 +105,7 @@ class Role(db.Model):
             role.default = roles[r][1]
             db.session.add(role)
         db.session.commit()
-    
+
     def __repr__(self):
         return '<Role %r>' % self.name
 
@@ -137,6 +137,7 @@ class User(UserMixin, db.Model):
         if self.email is not None and self.avatar_hash is None:
             self.avatar_hash = \
                 hashlib.md5(self.email.encode('utf-8')).hexdigest()
+        self.follow(self)
 
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -209,7 +210,7 @@ class User(UserMixin, db.Model):
         self.confirmed = True
         db.session.add(self)
         return True
-    
+
     def change_email(self, token):
         """更改邮箱"""
         s = Serializer(current_app.config['SECRET_KEY'])
@@ -221,7 +222,7 @@ class User(UserMixin, db.Model):
         self.avatar_hash = hashlib.md5(self.email.encode('utf-8')).hexdigest()
         db.session.add(self)
         return True
-    
+
     def generate_email_change_token(self, email=None):
         """生产邮箱更改使用的令牌"""
         if email is None:
@@ -255,30 +256,6 @@ class User(UserMixin, db.Model):
             url=url, hash=my_hash, size=size, default=default, rating=rating
         )
 
-    @staticmethod
-    def generate_fake(count=100):
-        """生成虚拟数据 count控制数量"""
-        from sqlalchemy.exc import IntegrityError
-        from random import seed
-        import forgery_py
-
-        seed()
-        for i in range(count):
-            u = User(email=forgery_py.internet.email_address(),
-                     username=forgery_py.internet.user_name(True),
-                     password=forgery_py.lorem_ipsum.word(),
-                     confirmed=True,
-                     name=forgery_py.name.full_name(),
-                     location=forgery_py.address.city(),
-                     about_me=forgery_py.lorem_ipsum.sentence(),
-                     member_since=forgery_py.date.date(True)
-                     )
-            db.session.add(u)
-            try:
-                db.session.commit()
-            except IntegrityError:
-                db.session.rollback()
-
     # 关注关系的辅助方法
     def follow(self, user):
         """关注某人"""
@@ -306,6 +283,45 @@ class User(UserMixin, db.Model):
         # 在self的粉丝中查找有没有user
         return self.followers.filter_by(follower_id=user.id).first() is not None
 
+    @property
+    def followed_posts(self):
+        """
+        返回联结查询结果： 已关注的用户的文章（包括自己）
+        属性化的原因是为了统一格式
+        """
+        return Post.query.join(Follow, Follow.followed_id == Post.author_id)\
+            .filter(Follow.follower_id == self.id)
+
+    @staticmethod
+    def generate_fake(count=100):
+        """生成虚拟数据 count控制数量"""
+        from sqlalchemy.exc import IntegrityError
+        from random import seed
+        import forgery_py
+
+        seed()
+        for i in range(count):
+            u = User(email=forgery_py.internet.email_address(),
+                     username=forgery_py.internet.user_name(True),
+                     password=forgery_py.lorem_ipsum.word(),
+                     confirmed=True,
+                     name=forgery_py.name.full_name(),
+                     location=forgery_py.address.city(),
+                     about_me=forgery_py.lorem_ipsum.sentence(),
+                     member_since=forgery_py.date.date(True)
+                     )
+            db.session.add(u)
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+
+    @staticmethod
+    def add_self_follows():
+        for user in User.query.all():
+            user.follow(user)
+            db.session.add(user)
+            db.session.commit()
 
     def __repr__(self):
         return '<User %r>' % self.username

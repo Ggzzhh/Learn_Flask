@@ -5,7 +5,7 @@
 
 from datetime import datetime
 from flask import render_template, session, redirect, url_for, \
-    abort, flash, request, current_app
+    abort, flash, request, current_app, make_response
 from flask_login import login_required, current_user
 from . import main
 from .forms import EditProfileForm, EditProfileAdminForm, \
@@ -31,15 +31,24 @@ def index():
     # 开始分页
     # 获取渲染页数 默认值是1 也就是从首页开始 类型是整数
     page = request.args.get('page', 1, type=int)
+
+    show_followed = False
+    if current_user.is_authenticated:
+        # 获取cookie值 如果没有 就设定值为空
+        show_followed = bool(request.cookies.get('show_followed', ''))
+    if show_followed:
+        query = current_user.followed_posts
+    else:
+        query = Post.query
     # paginate(page, ...)的返回值是pagination类型的 page是必须参数, per_page是每页显示数
     # error_out 如果为True 超出页数范围会返回404 否则为空列表
-    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
+    pagination = query.order_by(Post.timestamp.desc()).paginate(
         page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
         error_out=False
     )
     posts = pagination.items
     return render_template("index.html", form=form, posts=posts,
-                           pagination=pagination)
+                           show_followed=show_followed, pagination=pagination)
 
 
 @main.route('/user/<username>')
@@ -215,3 +224,28 @@ def followed_by(username):
     return render_template('follow.html', user=user, title='关注的人',
                            endpoint='.followed_by', pagination=pagination,
                            follows=follows)
+
+
+@main.route('/all')
+@login_required
+def show_all():
+    """返回一个响应，这个响应设置了cookie['show_followed']的值为空(默认也是空)"""
+    # 生成一个响应 因为cookie只能在响应中设置
+    resp = make_response(redirect(url_for('.index')))
+    # 给响应设置一个最长保存时间一个月的cookie
+    resp.set_cookie('show_followed', "", max_age=30*24*60*60)
+    return resp
+
+
+@main.route('/followed')
+@login_required
+def show_followed():
+    """
+    返回一个响应，这个响应设置了cookie['show_followed']的值为1
+    点击这个地址会显示已关注的人并且返回至首页
+    """
+    # 生成一个响应 因为cookie只能在响应中设置
+    resp = make_response(redirect(url_for('.index')))
+    # 给响应设置一个最长保存时间一个月的cookie
+    resp.set_cookie('show_followed', "1", max_age=30*24*60*60)
+    return resp

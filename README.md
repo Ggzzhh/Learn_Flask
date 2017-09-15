@@ -463,4 +463,29 @@ Web表单
     * cascade='all, delete-orphan' 个人理解为：A关注了B,C,D! B用户被删除了，
     这个属性可以把A的关注列表中的B 也删除，变为C,D。
 
-* 添加关注的git提交为2017-09-15-a
+* 添加关注的github提交为2017-09-15-a
+* 使用数据库联结查询所关注用户的文章
+    * 需要用到join 联结关键字 把两个表联结拼合在一起
+    * 例子： 需要先查询所关注的用户都有谁（表1），之后查询这些用户的文章(表2)
+    * Flask-SQLAlchemy查询用例子：
+        `db.session.query(Post).select_from(Follow).\
+        filter_by(follower_id=self.id).\
+        join(Post, Follow.followed_id == Post.author_id)`
+
+    * 来分解一下, 因为牵扯的表比较多 所以用基础查询 self.id 是用户自身的id
+        * db.session.query(Post)            指明这个查询要返回Post对象
+        * select_from(Follow)               意思是这个查询从Follow模型开始
+        * filter_by(follower_id=self.id)    使用关注用户过滤follows表
+        * join(...)                         联结filter_by()得到的结果和Post对象
+
+    * 调换过滤器和联结的顺序可以简化这个查询：
+    `Post.query.join(Follow, Follow.followed_id == Post.author_id)\
+        .filter(Follow.follower_id == self.id)`
+    * 这两种结构查询生成的原生态SQL语句是一样的， 不同的是一个先联结再过滤，
+    第二个先过滤再联结
+    * 实现提交为2017-09-15-b
+
+* 在已关注的人的文章中查看自己 解决办法一： 把自己添加进已关注的人中
+    然后在渲染时数量-1 ，调整粉丝和关注用户的列表，不再显示自己。
+    最后单元测试会收到自关注的影响，注意调整。
+
