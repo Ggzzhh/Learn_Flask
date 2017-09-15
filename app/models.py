@@ -76,6 +76,7 @@ db.event.listen(Post.body, 'set', Post.on_changed_body)
 
 # 创建数据库表
 class Role(db.Model):
+    """角色相关"""
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), unique=True)
@@ -109,10 +110,22 @@ class Role(db.Model):
         return '<Role %r>' % self.name
 
 
+class Follow(db.Model):
+    """关注关联表模型"""
+    __tablename__ = "follows"
+    follower_id = db.Column(db.Integer, db.ForeignKey('users.id'),
+                            primary_key=True)
+    followed_id = db.Column(db.Integer, db.ForeignKey('users.id'),
+                            primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+
 class User(UserMixin, db.Model):
     """用户相关数据库的创建以及各种数据库操作"""
 
     avatar_hash = db.Column(db.String(32))
+
     # 构造函数调用基类的构造函数完成用户创建
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -142,6 +155,19 @@ class User(UserMixin, db.Model):
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)  # 最后登录时间
     # 博客相关
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+    # 使用两个一对多关系实现多对多关系
+    # 用户关注的人
+    followed = db.relationship('Follow',
+                               foreign_keys=[Follow.follower_id],
+                               backref=db.backref('follower', lazy='joined'),
+                               lazy='dynamic',
+                               cascade='all, delete-orphan')
+    # 用户的粉丝
+    followers = db.relationship('Follow',
+                                foreign_keys=[Follow.followed_id],
+                                backref=db.backref('followed', lazy='joined'),
+                                lazy='dynamic',
+                                cascade='all, delete-orphan')
 
     # 对密码进行属性化并加密
     @property
@@ -253,6 +279,34 @@ class User(UserMixin, db.Model):
             except IntegrityError:
                 db.session.rollback()
 
+    # 关注关系的辅助方法
+    def follow(self, user):
+        """关注某人"""
+        # 如果self没有关注user
+        if not self.is_following(user):
+            # 那么在关系表中添加 关注者是self ，被关注者是user
+            # Follow因为外键的关系多出了两个属性
+            f = Follow(follower=self, followed=user)
+            db.session.add(f)
+
+    def unfollow(self, user):
+        """取消关注"""
+        # 在self的关注者中查找user
+        f = self.followed.filter_by(followed_id=user.id).first()
+        if f:
+            db.session.delete(f)
+
+    def is_following(self, user):
+        """查询是否已关注"""
+        # 在self关注的人中查找
+        return self.followed.filter_by(followed_id=user.id).first() is not None
+
+    def is_followed_by(self, user):
+        """查询是否被某人关注"""
+        # 在self的粉丝中查找有没有user
+        return self.followers.filter_by(follower_id=user.id).first() is not None
+
+
     def __repr__(self):
         return '<User %r>' % self.username
 
@@ -265,3 +319,5 @@ class AnonymousUser(AnonymousUserMixin):
 
     def is_administrator(self):
         return False
+
+

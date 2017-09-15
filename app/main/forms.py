@@ -58,6 +58,6 @@ class EditProfileAdminForm(FlaskForm):
 
 class PostForm(FlaskForm):
     """博客文章表单"""
-    body = PageDownField("你在想什么？", validators=[DataRequired()],
+    body = PageDownField("发微博", validators=[DataRequired()],
                          render_kw={"rows": 3})
     submit = SubmitField("提交")

@@ -17,6 +17,8 @@ class Config:
     FLASKY_MAIL_SENDER = '某管理员 <gggzh@139.com>'
     # 分页显示数
     FLASKY_POSTS_PER_PAGE = 12
+    # 粉丝页分页显示数
+    FLASK_FOLLOWERS_PER_PAGE = 15
     # 管理员邮箱
     FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
     MAIL_SERVER = 'smtp.139.com'  # 服务器地址

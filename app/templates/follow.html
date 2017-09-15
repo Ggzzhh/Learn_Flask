@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% import '_macros.html' as macros %}
+
+{% block title %} {{ user.username }}{{ title }} {% endblock title %}
+
+{% block page_content %}
+	<div class="page-header">
+		<h1>{{ user.username }}{{ title }}</h1>
+	</div>
+	<table class="table table-striped table-hover table-responsive follow">
+		<thead><tr><th>用户</th><th>关注时间</th></tr></thead>
+		{% for follow in follows %}
+			<tbody>
+				<tr>
+					<td>
+						<a href="{{ url_for('.user', username = follow.user.username) }}">
+                <img class="img-circle" src="{{ follow.user.gravatar(size=32) }}">
+                {{ follow.user.username }}
+            </a>
+					</td>
+					<td>
+						{{ moment(follow.timestamp).format('L') }}
+					</td>
+				</tr>
+			</tbody>
+		{% endfor %}
+	</table>
+
+	{% if pagination %}
+		<div class="pagination">
+			{{ macros.pagination_widget(pagination, endpoint, username=username) }}
+		</div>
+	{% endif %}
+
+{% endblock page_content %}

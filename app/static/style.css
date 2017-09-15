@@ -53,3 +53,6 @@ div.post-footer a {
     margin-top: 1em;
     float: right;
 }
+.follow {
+    min-height: 400px;
+}

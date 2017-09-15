@@ -9,7 +9,7 @@
 	</div>
 	<div class="form">
 		<form action="" target="" method="post"
-  class="form" role="form">
+					class="form" role="form">
 			{{ form.hidden_tag() }}
 			<div class="form-group">
 				{{ form.body.label(class='control-label') }}
@@ -22,7 +22,7 @@
 				</div>
 			</div>
 		</form>
-{#	{{ wtf.quick_form(form) }}#}
+		{#	{{ wtf.quick_form(form) }}#}
 	</div>
 {% endblock page_content %}
 
@@ -30,22 +30,12 @@
 	{{ super() }}
 	{{ pagedown.include_pagedown() }}
 	<script>
-	$(function () {
-			$('#delete').click(function (e) {
-			    e.preventDefault();
-					var id = $(this).attr('id');
-					$.ajax({
-							url: "{{ url_for('.delete', id=current_user.id) }}",
-							type: "POST",
-							success: function (resp) {
-							    if (resp.status !== 1){
-							        alert('出现错误！');
-									}
-									location.reload()
-              }
-					})
-      });
-  })
+      $(function () {
+          $('#delete').click(function (e) {
+              $.post("{{ url_for('.delete', id=posts.id) }}");
+          })
+
+      })
 	</script>
 {% endblock scripts %}
 

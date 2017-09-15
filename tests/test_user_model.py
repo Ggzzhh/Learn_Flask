@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import  unittest
+import unittest
 from app.models import User, Role, Permission, AnonymousUser
 
 

@@ -1,4 +1,9 @@
 <ul class="posts">
+	{% if not posts  %}
+		<li class="text-center">
+			<a href="/" class="text-muted btn btn-lg">来发微博助助兴~</a>
+		</li>
+	{% endif %}
 	{% for post in posts %}
 		<li class="post">
 			<div class="post-thumbnail">
