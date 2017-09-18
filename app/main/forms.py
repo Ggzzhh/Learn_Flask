@@ -61,3 +61,9 @@ class PostForm(FlaskForm):
     body = PageDownField("发微博", validators=[DataRequired()],
                          render_kw={"rows": 3})
     submit = SubmitField("提交")
+
+
+class CommentForm(FlaskForm):
+    """评论用表单"""
+    body = PageDownField('输入你的评论', validators=[DataRequired()])
+    submit = SubmitField('提交')

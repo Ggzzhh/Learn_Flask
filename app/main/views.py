@@ -9,9 +9,9 @@ from flask import render_template, session, redirect, url_for, \
 from flask_login import login_required, current_user
 from . import main
 from .forms import EditProfileForm, EditProfileAdminForm, \
-    PostForm
+    PostForm, CommentForm
 from .. import db
-from ..models import User, Role, Permission, Post
+from ..models import User, Role, Permission, Post, Comment
 from ..decorators import admin_required, permission_required
 
 
@@ -108,11 +108,30 @@ def edit_profile_admin(id):
     return render_template('edit_profile.html', form=form, user=user)
 
 
-@main.route('/post/<int:id>')
+@main.route('/post/<int:id>', methods=["POST", "GET"])
 def post(id):
     """文章固定连接"""
     my_post = Post.query.get_or_404(id)
-    return render_template('post.html', posts=[my_post])
+    form = CommentForm()
+    if form.validate_on_submit():
+        comment = Comment(body=form.body.data,
+                          post=my_post,
+                          author=current_user._get_current_object())
+        db.session.add(comment)
+        flash('你发布了一条评论！')
+        # page=-1 用来请求评论的最后一页，也就是发完评论之后直接可以看见自己的评论
+        return redirect(url_for('.post', id=my_post.id, page=-1))
+    page = request.args.get('page', 1, type=int)
+    if page == -1:
+        page = (my_post.comments.count() - 1) // \
+            current_app.config['FLASKY_COMMENTS_PER_PAGE'] + 1
+    pagination = my_post.comments.order_by(Comment.timestamp.asc()).paginate(
+        page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
+        error_out=False
+    )
+    comments = pagination.items
+    return render_template('post.html', posts=[my_post], form=form,
+                           comments=comments, pagination=pagination)
 
 
 @main.route('/edit/<int:id>', methods=["GET", "POST"])
@@ -249,3 +268,42 @@ def show_followed():
     # 给响应设置一个最长保存时间一个月的cookie
     resp.set_cookie('show_followed', "1", max_age=30*24*60*60)
     return resp
+
+
+@main.route('/moderate')
+@login_required
+@permission_required(Permission.MODERATE_COMMENTS)
+def moderate():
+    """管理评论"""
+    page = request.args.get('page', 1, type=int)
+    pagination = Comment.query.order_by(Comment.timestamp.desc()).paginate(
+        page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
+        error_out=False
+    )
+    comments = pagination.items
+    return render_template('moderate.html', comments=comments,
+                           pagination=pagination, page=page)
+
+
+@main.route('/moderate/enable/<int:id>')
+@login_required
+@permission_required(Permission.MODERATE_COMMENTS)
+def moderate_enable(id):
+    """启用该评论"""
+    comment = Comment.query.get_or_404(id)
+    comment.disabled = False
+    db.session.add(comment)
+    return redirect(url_for('.moderate',
+                            page=request.args.get('page', 1, type=int)))
+
+
+@main.route('/moderate/disable/<int:id>')
+@login_required
+@permission_required(Permission.MODERATE_COMMENTS)
+def moderate_disable(id):
+    """禁用评论"""
+    comment = Comment.query.get_or_404(id)
+    comment.disabled = True
+    db.session.add(comment)
+    return redirect(url_for('.moderate',
+                            page=request.args.get('page', 1, type=int)))

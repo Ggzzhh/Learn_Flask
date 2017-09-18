@@ -25,9 +25,9 @@
 					{% endif %}
 				</div>
 				<div class="post-footer">
-					<a href="{{ url_for('.post', id=post.id) }}">
+					<a href="{{ url_for('.post', id=post.id) }}#comments">
 						<span class="label label-primary">
-							查看详情
+							{{ post.comments.count() }} 查看评论
 						</span>
 					</a>
 					{% if current_user == post.author %}

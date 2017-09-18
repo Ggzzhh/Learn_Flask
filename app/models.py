@@ -19,6 +19,29 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
+class Comment(db.Model):
+    """评论模型"""
+    __tablename__ = 'comments'
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    body_html = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    disabled = db.Column(db.Boolean)
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        """当内容改变时， 使用markdown 转换body内容为html"""
+        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'code',
+                        'em', 'i', 'strong', 'p']
+        target.body_html = bleach.linkify(bleach.clean(
+            markdown(value, output_format='html'),
+            tags=allowed_tags, strip=True))
+
+db.event.listen(Comment.body, 'set', Comment.on_changed_body)
+
+
 # 要支持的用户角色以及定义角色的使用权限
 class Permission:
     FOLLOW = 0x01   # 关注其他用户
@@ -36,6 +59,7 @@ class Post(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow())
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     body_html = db.Column(db.Text)
+    comments = db.relationship('Comment', backref='post', lazy='dynamic')
 
     @staticmethod
     def generate_fake(count=100):
@@ -120,7 +144,6 @@ class Follow(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 
-
 class User(UserMixin, db.Model):
     """用户相关数据库的创建以及各种数据库操作"""
 
@@ -169,6 +192,7 @@ class User(UserMixin, db.Model):
                                 backref=db.backref('followed', lazy='joined'),
                                 lazy='dynamic',
                                 cascade='all, delete-orphan')
+    comments = db.relationship('Comment', backref='author', lazy='dynamic')
 
     # 对密码进行属性化并加密
     @property
@@ -335,5 +359,7 @@ class AnonymousUser(AnonymousUserMixin):
 
     def is_administrator(self):
         return False
+
+
 
 

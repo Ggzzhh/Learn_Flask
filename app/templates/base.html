@@ -46,6 +46,9 @@
 									<li><a href="{{ url_for('main.edit_profile_admin',
 										id=current_user.id) }}">管理用户</a></li>
 								{% endif %}
+								{% if current_user.can(Permission.MODERATE_COMMENTS) %}
+									<li><a href="{{ url_for('main.moderate') }}">管理评论</a></li>
+									{% endif %}
 								<li><a href="{{ url_for('auth.logout') }}">退出登录</a></li>
 							</ul>
 						</li>
