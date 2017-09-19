@@ -2,13 +2,14 @@
 # -*- coding:utf-8 -*-
 import hashlib
 from datetime import datetime
-from . import db
+from . import db, login_manager
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, AnonymousUserMixin
-from flask import current_app, request
+from flask import current_app, request, url_for
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from markdown import markdown
 import bleach
+from app.exceptions import ValidationError
 
 from . import login_manager
 
@@ -38,6 +39,11 @@ class Comment(db.Model):
         target.body_html = bleach.linkify(bleach.clean(
             markdown(value, output_format='html'),
             tags=allowed_tags, strip=True))
+
+    def to_json(self):
+        """把评论转换成JSON格式的序列化字典"""
+        # todo: 先去api接口内 写完所有路由再写这个玩意。。。
+        pass
 
 db.event.listen(Comment.body, 'set', Comment.on_changed_body)
 
@@ -346,6 +352,22 @@ class User(UserMixin, db.Model):
             user.follow(user)
             db.session.add(user)
             db.session.commit()
+
+    def generate_auth_token(self, expiration):
+        """生产验证密匙"""
+        s = Serializer(current_app.config['SECRET_KEY'],
+                       expires_in=expiration)
+        return s.dumps({'id': self.id})
+
+    @staticmethod
+    def verify_auth_token(token):
+        """验证密匙 并返回用户id"""
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except:
+            return None
+        return User.query.get(data['id'])
 
     def __repr__(self):
         return '<User %r>' % self.username

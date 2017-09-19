@@ -6,7 +6,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 # 基础设置
 class Config:
     # 设置密匙
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'GZHNYC'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'GG0914ZH'
     # 每次请求结束后自动提交数据库变动设置为true
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     # Flask-SQLAlchemy 将会追踪对象的修改并且发送信号

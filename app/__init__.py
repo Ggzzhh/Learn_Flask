@@ -47,10 +47,15 @@ def create_app(config_name):
 
     # 附加路由和自定义的s错误页面
     from .main import main as main_blueprint
-    from .auth import auth as auth_blueprint
     # app的注册蓝本
-    app.register_blueprint(main_blueprint, )
+    app.register_blueprint(main_blueprint)
+
+    from .auth import auth as auth_blueprint
     # url_prefix 是为所有的url加上的前缀
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
+
+    # 注册API蓝本 APP下的每个功能蓝本都在这里注册
+    from .api_1_0 import api as api_1_0_blueprint
+    app.register_blueprint(api_1_0_blueprint, url_prefix='/api/v1.0')
 
     return app

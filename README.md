@@ -489,3 +489,81 @@ Web表单
     然后在渲染时数量-1 ，调整粉丝和关注用户的列表，不再显示自己。
     最后单元测试会收到自关注的影响，注意调整。
 
+
+REST风格的应用程序接口--API
+-------------------------
+
+* RIA(富互联网应用)架构中，服务器的主要功能是为客户提供`数据存取`服务。
+    在这种模式下，服务器变成了`Web服务`或`应用程序接口(API)`
+
+* REST 翻译为 表现层状态转移
+
+* 关于 REST怎么简单解释...
+> 以下引用自：[知乎上的某REST话题](https://www.zhihu.com/question/28557115)
+
+* 简单理解为：`URL定位资源，HTTP动词描述操作。`
+
+* 再直白点就是：
+    * `看URL就知道要什么`
+    * `看HTTP Method 就知道干什么`
+    * `看HTTP status code 就知道结果是什么`
+
+* REST架构的特征（优点）
+    * 客户端-服务器分离：
+        * 操作简单，高性能，低成本，允许组件分别优化。
+    * 无状态（Stateless）：从客户端的每个请求要包含服务器所需要的所有信息
+        * 提高可见性（可以单独考虑每个请求）
+        * 提高了可靠性（更容易从局部故障中修复）
+        * 提高可扩展性（降低了服务器资源使用）
+    * 缓存（Cachable）：服务器返回信息必须被标记是否可以缓存，
+                       如果缓存，客户端可能会重用之前的信息发送请求。
+        * 减少交互次数
+        * 减少交互的平均延迟
+    * 分层系统：系统组件不需要知道与他交流组件之外的事情。封装服务，引入中间层。
+        * 限制了系统的复杂性
+        * 提高可扩展性
+    * 统一接口（Uniform Interface）： 一般为HTTP
+        * 提高交互的可见性
+        * 鼓励单独改善组件
+    * 支持按需代码（Code-On-Demand 可选）： 客户端可以选择从服务器上下载代码，在客户端的环境中执行。
+        * 提高可扩展性
+
+* REST中资源就是一切，资源为REST架构方式的核心概念。
+    * 一般来说：URL的风格为名词，并且推荐使用复数
+    * 如：GET /api/posts    DELETE /api/comments
+    * 因此 GET /posts/<int: id>/delete 这样的URL  ####绝对不是RESTful架构风格
+
+* ###REST架构API中使用的HTTP请求方法
+    * GET(获取资源) POST(新建或更新资源) PUT(更新资源) DELETE(删除资源)
+    * 响应状态码一般为200
+
+* Flask比较适用于用json(JavaScript对象表示法)传递资源，如：
+    ```python
+        {
+        "url": "http://www.example.com/api/posts/12345",
+        "title": "Writing RESTful APIs in Python",
+        "author": "http://www.example.com/api/users/2",
+        "body": "... text of the article here ...",
+        "comments": "http://www.example.com/api/posts/12345/comments"
+        }
+    ```
+* 使用FLASK创建RESTful： 参见app/api_1_0
+
+* 错误处理
+    * REST会在响应中发送HTTP状态码，并将额外信息放入响应主体。
+    * 一般来说：
+    HTTP状态码     名　　称                               说　　明
+        200     OK（成功）                               请求成功完成
+        201     Created（已创建）                        请求成功完成并创建了一个新资源
+        400     Bad request（坏请求）                    请求不可用或不一致
+        401     Unauthorized（未授权）                   请求未包含认证信息
+        403     Forbidden（禁止）                        请求中发送的认证密令无权访问目标
+        404     Notfound（未找到）                       URL 对应的资源不存在
+        405     Method not allowed（不允许使用的方法）    指定资源不支持请求使用的方法
+        500     Internal server error（内部服务器错误）   处理请求的过程中发生意外错误
+
+* 使用Flask-HTTPAuth认证用户
+    * 　示例： app/api_1_0/authentication.py
+    * 关于全局对象g 它是一个请求上下文？ 只存活于当前请求中 换一个请求就换了一个g
+
+
