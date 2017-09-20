@@ -163,9 +163,8 @@ def change_email_request():
         token = current_user.generate_email_change_token(new_email)
         send_email(new_email, "更换登录邮箱", "auth/email/change_email",
                    user=current_user, token=token)
-        logout_user()
         flash("一封验证邮件已经发送到你的新邮箱！请完成验证并重新登录！")
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('main.index'))
     return render_template('auth/change_email.html', form=form)
 
 
