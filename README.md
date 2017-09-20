@@ -566,4 +566,9 @@ REST风格的应用程序接口--API
     * 　示例： app/api_1_0/authentication.py
     * 关于全局对象g 它是一个请求上下文？ 只存活于当前请求中 换一个请求就换了一个g
 
+* 关于jsonify() 函数是把python中的dict类型转换成json类型
+    * jsonify() 返回的数据中，中文显示Unicode，
+    * 改正方法 app.config['JSON_AS_ASCII'] = False ??
+    * json.dumps()解决同样的问题可以加入ensure_ascii=False
+
 
