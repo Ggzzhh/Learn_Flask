@@ -581,4 +581,49 @@ REST风格的应用程序接口--API
     * 代码覆盖报告工具 Coverage
 
 
+性能
+---
+* 报告 缓慢的数据库查询 见　app/main/views.py
+* after_app_request函数的作用是在视图函数处理完请求之后执行
+
+* 把生产环境中的错误写入日志 然后发送到管理员邮箱
+* 使用from logging.handlers import SMTPHandler 例子：config.py中
+
+* 使用Flask-SSLify启用安全HTTP
+    * 用户登录程序时要在 Web 表单中提交用户名和密码，这些数据在传输过程中可被第三方截
+    取，就像前文已多次提及的。为了避免他人使用这种方式偷取用户密令，我们必须使用安
+    全 HTTP，使用公钥加密法加密客户端和服务器之间传输的数据。
+
+
+最后
+---
+一些值得研究的flask拓展包:
+* FLask-RESTful（http://flask-restful.readthedocs.org/en/latest/）：
+    开发 REST API 的工具。
+
+* Celery（http://docs.celeryproject.org/en/latest/）：
+    处理后台作业的任务队列。
+
+* Frozen-Flask（https://pythonhosted.org/Frozen-Flask/）：
+    把 Flask 程序转换成静态网站。
+
+* Flask-DebugToolbar（https://github.com/mgood/flask-debugtoolbar）：
+    在浏览器中使用的调试工具。
+
+* Flask-Assets（https://github.com/miracle2k/flask-assets）：
+    用于合并、压缩、编译 CSS 和 JavaScript 静态资源文件。
+
+* Flask-OAuth（http://pythonhosted.org/Flask-OAuth/）：
+    使用 OAuth 服务进行认证。
+
+* Flask-OpenID（http://pythonhosted.org/Flask-OpenID/）：
+    使用 OpenID 服务进行认证。
+
+* Flask-WhooshAlchemy（https://pythonhosted.org/Flask-WhooshAlchemy/）：
+    使用Whoosh（http://pythonhosted.org/Whoosh/）实现 Flask-SQLAlchemy 模型的全文搜索。
+
+* Flask-KVsession（http://flask-kvsession.readthedocs.org/en/latest/）：
+    使用服务器端存储实现的另一种用户会话。
+
+
 
